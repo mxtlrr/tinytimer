@@ -1,0 +1,10 @@
+# release
+bin/
+
+# testing splits
+test/
+src/test/
+src/*.txt
+
+# testing logging
+src/*.log
