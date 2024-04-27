@@ -19,25 +19,33 @@ var (
 	splits_     []splits.Split_t
 	split_count int
 	iterator    int = 0
+
+	/* Logging */
+	to_log bool   = false // Let's not log, default.
+	log    string = ""    // By default we log to stdin
 )
 
 func main() {
-	// Argv[1] is going to be the flag, either being
-	// --file, or --log.
-	var file string = "splits.txt"
+	var (
+		file string = "splits.txt"
+	)
 	if len(os.Args) > 1 {
 		args := os.Args
-		// We're able to change the file, but we're gonna read
-		// from this file
-		if strings.Compare(args[1], "--file") == 0 {
-			file = args[2]
+		for i := range args {
+			if strings.Compare(args[i], "--file") == 0 {
+				file = args[i+1]
+			}
+
+			if strings.Compare(args[i], "--log") == 0 {
+				to_log = true   // Yes, log.
+				log = args[i+1] // Log to this file please!
+			}
 		}
 	}
 	splits_ = splits.Gen_splits(file)
-	fmt.Printf("found splits...\n")
-	for i := range splits_ {
-		fmt.Printf("%d: %s\n", i, splits_[i].NAME)
-	}
+	/* https://stackoverflow.com/q/19979178#comment29744145_19979829 */
+	fmt.Printf("Logging? %s | File: %s\n",
+		(map[bool]string{true: "yes", false: "no"})[to_log], log)
 
 	// Set split count
 	split_count = len(splits_)
@@ -56,12 +64,28 @@ func main() {
 	fmt.Printf("\n")
 
 	// TODO: show output if argv[1] not log
+	os.Create(log)                                                     // Create file
+	f, err := os.OpenFile(log, os.O_APPEND|os.O_WRONLY, os.ModeAppend) // Open it for writing
+	if err != nil {
+		panic(err)
+	}
+
 	for i := range splits_ {
-		fmt.Printf("SPLIT: %s | TIME %d.%d\n",
-			splits_[i].NAME, splits_[i].TIME_SECONDS,
-			splits_[i].TIME_MILLISEC)
+		if to_log {
+			_, err := fmt.Fprintf(f, "SPLIT: %s | TIME %d.%d\n",
+				splits_[i].NAME, splits_[i].TIME_SECONDS,
+				splits_[i].TIME_MILLISEC)
+			if err != nil {
+				panic(err)
+			}
+		} else { // Else just write out stdout
+			fmt.Printf("SPLIT: %s | TIME %d.%d\n",
+				splits_[i].NAME, splits_[i].TIME_SECONDS,
+				splits_[i].TIME_MILLISEC)
+		}
 	}
 	exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+	f.Close()
 }
 
 /* Check for input. Set running to false if we get input */
