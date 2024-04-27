@@ -14,7 +14,6 @@ var (
 )
 
 func main() {
-
 	for running != false {
 		if milliseconds < 1000 {
 			milliseconds++
