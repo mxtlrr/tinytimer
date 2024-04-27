@@ -64,20 +64,23 @@ func main() {
 	fmt.Printf("\n")
 
 	// TODO: show output if argv[1] not log
-	os.Create(log)                                                     // Create file
-	f, err := os.OpenFile(log, os.O_APPEND|os.O_WRONLY, os.ModeAppend) // Open it for writing
-	if err != nil {
-		panic(err)
+	if to_log {
+		os.Create(log) // Create file
 	}
 
 	for i := range splits_ {
 		if to_log {
-			_, err := fmt.Fprintf(f, "SPLIT: %s | TIME %d.%d\n",
+			f, err := os.OpenFile(log, os.O_APPEND|os.O_WRONLY, os.ModeAppend) // Open it for writing
+			if err != nil {
+				panic(err)
+			}
+			_, err = fmt.Fprintf(f, "SPLIT: %s | TIME %d.%d\n",
 				splits_[i].NAME, splits_[i].TIME_SECONDS,
 				splits_[i].TIME_MILLISEC)
 			if err != nil {
 				panic(err)
 			}
+			f.Close() // I feel like shit writing this
 		} else { // Else just write out stdout
 			fmt.Printf("SPLIT: %s | TIME %d.%d\n",
 				splits_[i].NAME, splits_[i].TIME_SECONDS,
@@ -85,7 +88,6 @@ func main() {
 		}
 	}
 	exec.Command("stty", "-F", "/dev/tty", "echo").Run()
-	f.Close()
 }
 
 /* Check for input. Set running to false if we get input */
