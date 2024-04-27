@@ -11,7 +11,7 @@ data in an array of a data type known as `split_t`. It is defined as
 ```
 
 ## Setting up Splits
-TT looks for a `splits` file in the current working directory.
+TT looks for a `splits.txt` file in the current working directory.
 Alternatively, you can pass `--file [splits]` into TT, and it will look
 there instead. Luckily, the format for setting up splits is very easy.
 
