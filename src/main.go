@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -87,15 +88,20 @@ func main() {
 				splits_[i].TIME_MILLISEC)
 		}
 	}
-	exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+
+	if runtime.GOOS != "windows" {
+		exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+	}
 }
 
 /* Check for input. Set running to false if we get input */
 func checkInput() {
-	/* Hide enter
-	 * TODO: cross-platform */
-	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
-	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+	if runtime.GOOS != "windows" {
+		/* Hide enter
+		 * TODO: cross-platform */
+		exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
+		exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+	}
 
 	if iterator == split_count {
 		running = false
